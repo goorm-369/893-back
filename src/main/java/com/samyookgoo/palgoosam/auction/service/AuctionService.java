@@ -25,6 +25,8 @@ import com.samyookgoo.palgoosam.auction.repository.CategoryRepository;
 import com.samyookgoo.palgoosam.auth.service.AuthService;
 import com.samyookgoo.palgoosam.bid.domain.Bid;
 import com.samyookgoo.palgoosam.bid.repository.BidRepository;
+import com.samyookgoo.palgoosam.notification.service.NotificationService;
+import com.samyookgoo.palgoosam.notification.subscription.constant.SubscriptionType;
 import com.samyookgoo.palgoosam.payment.domain.Payment;
 import com.samyookgoo.palgoosam.user.domain.Scrap;
 import com.samyookgoo.palgoosam.user.domain.User;
@@ -59,6 +61,8 @@ public class AuctionService {
     private final FileStore fileStore;
     private final BidRepository bidRepository;
     private final AuthService authService;
+    private final NotificationService notificationService;
+
 
     public List<Long> getAuctionIdsByAuctions(List<Auction> auctions) {
         return auctions.stream()
@@ -140,6 +144,7 @@ public class AuctionService {
                             .imageSeq(image.getImageSeq())
                             .build());
         }
+        notificationService.subscribe(auction.getId(), SubscriptionType.SELLER);
 
         return AuctionCreateResponse.builder()
                 .title(auction.getTitle())
@@ -379,6 +384,7 @@ public class AuctionService {
 
         auctionImageRepository.deleteAll(images);
         auctionRepository.delete(auction);
+        notificationService.unsubscribe(auctionId, SubscriptionType.SELLER);
     }
 
     @Transactional(readOnly = true)
