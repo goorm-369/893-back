@@ -85,4 +85,20 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
                   AND a.endTime <= :now
             """)
     int updateStatusToCompleted(@Param("now") LocalDateTime now);
+
+    @Query("""
+            SELECT a
+            FROM Auction a
+            WHERE a.startTime BETWEEN :now AND :oneMinuteAgo
+            """)
+    List<Auction> findByStartTimeInOneMinute(@Param("now") LocalDateTime now,
+                                             @Param("oneMinuteAgo") LocalDateTime oneMinuteAgo);
+
+    @Query("""
+            SELECT a
+            FROM Auction a
+            WHERE a.endTime BETWEEN :now AND :oneMinuteAgo AND a.status = 'completed'
+            """)
+    List<Auction> findByEndTimeInOneMinute(@Param("now") LocalDateTime now,
+                                           @Param("oneMinuteAgo") LocalDateTime oneMinuteAgo);
 }
