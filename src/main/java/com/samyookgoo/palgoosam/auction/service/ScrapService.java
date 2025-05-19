@@ -6,7 +6,6 @@ import com.samyookgoo.palgoosam.auth.service.AuthService;
 import com.samyookgoo.palgoosam.user.domain.Scrap;
 import com.samyookgoo.palgoosam.user.domain.User;
 import com.samyookgoo.palgoosam.user.repository.ScrapRepository;
-import com.samyookgoo.palgoosam.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ScrapService {
 
-    private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final ScrapRepository scrapRepository;
     private final AuthService authService;
