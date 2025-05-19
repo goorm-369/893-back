@@ -3,6 +3,8 @@ package com.samyookgoo.palgoosam.auction.service;
 import com.samyookgoo.palgoosam.auction.domain.Auction;
 import com.samyookgoo.palgoosam.auction.repository.AuctionRepository;
 import com.samyookgoo.palgoosam.auth.service.AuthService;
+import com.samyookgoo.palgoosam.notification.service.NotificationService;
+import com.samyookgoo.palgoosam.notification.subscription.constant.SubscriptionType;
 import com.samyookgoo.palgoosam.user.domain.Scrap;
 import com.samyookgoo.palgoosam.user.domain.User;
 import com.samyookgoo.palgoosam.user.repository.ScrapRepository;
@@ -20,6 +22,7 @@ public class ScrapService {
     private final AuctionRepository auctionRepository;
     private final ScrapRepository scrapRepository;
     private final AuthService authService;
+    private final NotificationService notificationService;
 
     @Transactional
     public boolean addScrap(Long auctionId) {
@@ -39,6 +42,7 @@ public class ScrapService {
         scrap.setUser(user);
         scrap.setAuction(auction);
         scrapRepository.save(scrap);
+        notificationService.subscribe(auctionId, SubscriptionType.SCRAPPER);
         return true;
     }
 
@@ -58,6 +62,7 @@ public class ScrapService {
             return false;
         }
         scrapRepository.delete(optionalScrap.get());
+        notificationService.unsubscribe(auctionId, SubscriptionType.SCRAPPER);
         return true;
     }
 
