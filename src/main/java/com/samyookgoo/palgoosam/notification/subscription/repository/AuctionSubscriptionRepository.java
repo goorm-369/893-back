@@ -10,4 +10,6 @@ public interface AuctionSubscriptionRepository extends JpaRepository<AuctionSubs
     List<AuctionSubscription> findAllByUserAndAuction(User user, Auction auction);
 
     List<AuctionSubscription> findAllByUser(User user);
+
+    List<AuctionSubscription> findAllByAuction(Auction auction);
 }

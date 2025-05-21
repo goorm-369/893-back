@@ -8,6 +8,8 @@ import com.samyookgoo.palgoosam.bid.controller.response.BidResponse;
 import com.samyookgoo.palgoosam.bid.domain.Bid;
 import com.samyookgoo.palgoosam.bid.projection.AuctionMaxBid;
 import com.samyookgoo.palgoosam.bid.repository.BidRepository;
+import com.samyookgoo.palgoosam.notification.service.NotificationService;
+import com.samyookgoo.palgoosam.notification.subscription.constant.SubscriptionType;
 import com.samyookgoo.palgoosam.user.domain.User;
 import com.samyookgoo.palgoosam.user.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -29,6 +31,7 @@ public class BidService {
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public Map<Long, Integer> getAuctionMaxPrices(List<Long> auctionIds) {
         return bidRepository
@@ -104,7 +107,7 @@ public class BidService {
         Bid savedBid = bidRepository.save(bid);
         // TODO: MapStruct, ModelMapper 논의 후 사용 예정
         BidResponse bidResponse = mapToResponse(savedBid);
-
+        notificationService.subscribe(auctionId, SubscriptionType.BIDDER);
         return createBidEventResponse(auctionId, bidResponse, false);
     }
 
@@ -137,7 +140,7 @@ public class BidService {
         updateWinningBid(auctionId);
 
         BidResponse bidResponse = mapToResponse(bid);
-
+        notificationService.unsubscribe(auctionId, SubscriptionType.BIDDER);
         return createBidEventResponse(auctionId, bidResponse, true);
     }
 

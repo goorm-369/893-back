@@ -3,7 +3,7 @@ package com.samyookgoo.palgoosam.notification.constant;
 public class NotificationTemplates {
 
     public static String getAuctionStartingTemplate(String auctionTitle) {
-        return String.format("경매 '%s' 시작 5분 전입니다! 지금 참여하세요.", auctionTitle);
+        return String.format("곧 경매 '%s'가 시작합니다! 지금 참여하세요.", auctionTitle);
     }
 
     public static String getNewBidTemplate(String auctionTitle, int bidAmount) {
