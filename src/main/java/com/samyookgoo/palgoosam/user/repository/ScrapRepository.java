@@ -32,8 +32,8 @@ public interface ScrapRepository extends JpaRepository<Scrap, Long> {
 
     @Query("""
             SELECT s.auction.id AS auctionId, COUNT(s) AS scrapCount
-            FROM Scrap s 
-            WHERE s.auction.id IN :auctionIds 
+            FROM Scrap s
+            WHERE s.auction.id IN :auctionIds
             GROUP BY s.auction.id
             """)
     List<AuctionScrapCount> countGroupedByAuctionIds(List<Long> auctionIds);

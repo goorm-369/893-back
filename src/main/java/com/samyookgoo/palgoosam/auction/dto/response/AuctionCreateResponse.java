@@ -11,6 +11,9 @@ import lombok.Getter;
 @Schema(description = "경매 등록 응답 DTO")
 public class AuctionCreateResponse {
 
+    @Schema(description = "경매 ID", example = "1")
+    private Long auctionId;
+
     @Schema(description = "경매 제목", example = "아이폰 13 미개봉 새제품")
     private String title;
 

@@ -103,6 +103,7 @@ public class AuctionService {
         }
 
         return AuctionCreateResponse.builder()
+                .auctionId(auction.getId())
                 .title(auction.getTitle())
                 .description(auction.getDescription())
                 .basePrice(auction.getBasePrice())

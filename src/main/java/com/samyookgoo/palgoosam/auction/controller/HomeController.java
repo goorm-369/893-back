@@ -4,6 +4,7 @@ import com.samyookgoo.palgoosam.auction.dto.home.ActiveRankingResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.DashboardResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.PendingRankingResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.RecentAuctionResponse;
+import com.samyookgoo.palgoosam.auction.dto.home.SubCategoryBestItemResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.TopBidResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.UpcomingAuctionResponse;
 import com.samyookgoo.palgoosam.auction.service.HomeService;
@@ -22,8 +23,8 @@ public class HomeController {
     private final HomeService homeService;
 
     @GetMapping("/dashboard")
-    public DashboardResponse getDashboard() {
-        return homeService.getDashboard();
+    public ResponseEntity<BaseResponse<DashboardResponse>> getDashboard() {
+        return ResponseEntity.ok(BaseResponse.success("대시보드 조회 성공", homeService.getDashboard()));
     }
 
     @GetMapping("/recentAuction")
@@ -55,5 +56,11 @@ public class HomeController {
     public ResponseEntity<BaseResponse<List<PendingRankingResponse>>> getPendingRanking() {
         List<PendingRankingResponse> responses = homeService.getPendingRanking();
         return ResponseEntity.ok(BaseResponse.success("경매 예정 실시간 랭킹 조회 성공", responses));
+    }
+
+    @GetMapping("/best-sub-item")
+    public ResponseEntity<BaseResponse<List<SubCategoryBestItemResponse>>> getBestItem() {
+        List<SubCategoryBestItemResponse> responses = homeService.getSubCategoryBestItem();
+        return ResponseEntity.ok(BaseResponse.success("중분류 카테고리별 베스트 상품 조회 성공", responses));
     }
 }

@@ -3,18 +3,23 @@ package com.samyookgoo.palgoosam.auction.service;
 import com.samyookgoo.palgoosam.auction.constant.AuctionStatus;
 import com.samyookgoo.palgoosam.auction.domain.Auction;
 import com.samyookgoo.palgoosam.auction.domain.AuctionImage;
+import com.samyookgoo.palgoosam.auction.domain.Category;
 import com.samyookgoo.palgoosam.auction.dto.home.ActiveRankingResponse;
+import com.samyookgoo.palgoosam.auction.dto.home.BestItemResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.DashboardResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.PendingRankingResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.RecentAuctionResponse;
+import com.samyookgoo.palgoosam.auction.dto.home.SubCategoryBestItemResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.TopBidResponse;
 import com.samyookgoo.palgoosam.auction.dto.home.UpcomingAuctionResponse;
 import com.samyookgoo.palgoosam.auction.projection.AuctionBidCount;
 import com.samyookgoo.palgoosam.auction.projection.AuctionScrapCount;
 import com.samyookgoo.palgoosam.auction.projection.RankingAuction;
+import com.samyookgoo.palgoosam.auction.projection.SubCategoryBestItem;
 import com.samyookgoo.palgoosam.auction.projection.TopWinningBid;
 import com.samyookgoo.palgoosam.auction.repository.AuctionImageRepository;
 import com.samyookgoo.palgoosam.auction.repository.AuctionRepository;
+import com.samyookgoo.palgoosam.auction.repository.CategoryRepository;
 import com.samyookgoo.palgoosam.auth.service.AuthService;
 import com.samyookgoo.palgoosam.bid.repository.BidRepository;
 import com.samyookgoo.palgoosam.user.domain.User;
@@ -46,6 +51,7 @@ public class HomeService {
     private final ScrapRepository scrapRepository;
     private final AuthService authService;
     private final BidRepository bidRepository;
+    private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard() {
@@ -203,6 +209,48 @@ public class HomeService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<SubCategoryBestItemResponse> getSubCategoryBestItem() {
+        List<Category> subCategoryList = categoryRepository.findByParentIsNotNullAndChildrenIsNotEmpty();
+
+        return subCategoryList.stream()
+                .map(sub -> {
+                    List<SubCategoryBestItem> itemProjections = auctionRepository.findTop3BySubCategoryId(sub.getId(),
+                            PageRequest.of(0, 3));
+                    List<AuctionScrapCount> scrapCounts = scrapRepository.countGroupedByAuctionIds(
+                            itemProjections.stream().map(SubCategoryBestItem::getAuctionId).toList()
+                    );
+                    Map<Long, Integer> scrapMap = scrapCounts.stream()
+                            .collect(Collectors.toMap(AuctionScrapCount::getAuctionId,
+                                    AuctionScrapCount::getScrapCount));
+
+                    AtomicInteger rank = new AtomicInteger(1);
+                    List<BestItemResponse> items = itemProjections.stream()
+                            .map(p -> BestItemResponse.builder()
+                                    .auctionId(p.getAuctionId())
+                                    .title(p.getTitle())
+                                    .status(p.getStatus())
+                                    .itemCondition(p.getItemCondition())
+                                    .thumbnailUrl(p.getThumbnailUrl())
+                                    .scrapCount(scrapMap.getOrDefault(p.getAuctionId(), 0))
+                                    .isAuctionImminent(isAuctionImminent(p.getStartTime()))
+                                    .rankNum(rank.getAndIncrement())
+                                    .build())
+                            .toList();
+
+                    return SubCategoryBestItemResponse.builder()
+                            .subCategoryId(sub.getId())
+                            .subCategoryName(sub.getName())
+                            .items(items)
+                            .build();
+                }).toList();
+    }
+
+    private boolean isAuctionImminent(LocalDateTime startTime) {
+        LocalDateTime now = LocalDateTime.now();
+        return startTime.isAfter(now) && Duration.between(now, startTime).toHours() <= 1;
+    }
+
     private List<Auction> getRecentAuctionStatus() {
         List<AuctionStatus> statuses = List.of(AuctionStatus.active, AuctionStatus.pending);
         return auctionRepository.findTop6ByStatusInOrderByCreatedAtDesc(statuses);
@@ -260,9 +308,7 @@ public class HomeService {
         } else if (length >= 3) {
             StringBuilder masked = new StringBuilder();
             masked.append(name.charAt(0));
-            for (int i = 1; i < length - 1; i++) {
-                masked.append("*");
-            }
+            masked.append("*".repeat(length - 2));
             masked.append(name.charAt(length - 1));
             return masked.toString();
         }

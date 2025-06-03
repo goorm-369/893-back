@@ -6,6 +6,7 @@ import com.samyookgoo.palgoosam.auction.domain.AuctionForMyPageProjection;
 import com.samyookgoo.palgoosam.auction.projection.AuctionBidCount;
 import com.samyookgoo.palgoosam.auction.projection.AuctionScrapCount;
 import com.samyookgoo.palgoosam.auction.projection.RankingAuction;
+import com.samyookgoo.palgoosam.auction.projection.SubCategoryBestItem;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -93,4 +94,17 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
             JOIN auction_image as ai ON ai.auction_id = a.id AND ai.image_seq = 0
             """, nativeQuery = true)
     List<AuctionForMyPageProjection> findAllAuctionProjectionWithScrapByUserId(@Param("userId") Long userId);
+           
+    @Query("""
+                SELECT a.id AS auctionId, a.title AS title, a.status AS status, a.itemCondition AS itemCondition,
+                       img.url AS thumbnailUrl, a.startTime AS startTime
+                FROM Auction a
+                JOIN a.category c
+                JOIN c.parent mid
+                LEFT JOIN AuctionImage img ON img.auction.id = a.id AND img.imageSeq = 0
+                WHERE mid.id = :subCategoryId AND a.status IN ('pending', 'active')
+                ORDER BY (SELECT COUNT(s.id) FROM Scrap s WHERE s.auction.id = a.id) DESC, a.id ASC
+            """)
+    List<SubCategoryBestItem> findTop3BySubCategoryId(@Param("subCategoryId") Long subCategoryId, Pageable pageable);
+
 }

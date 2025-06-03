@@ -24,7 +24,7 @@ public class AuctionSearchRepository {
             FROM auction a
             LEFT JOIN bid b ON a.id = b.auction_id AND b.is_deleted = false
             LEFT JOIN scrap s ON a.id = s.auction_id
-            LEFT JOIN auction_image i ON a.id = i.auction_id
+            LEFT JOIN auction_image i ON a.id = i.auction_id AND i.image_seq = 0
             JOIN category c ON a.category_id = c.id
             WHERE
             MATCH(a.title, a.description) AGAINST (:keyword IN NATURAL LANGUAGE MODE) AND
