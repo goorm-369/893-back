@@ -16,11 +16,11 @@ import org.springframework.data.repository.query.Param;
 
 
 public interface BidRepository extends JpaRepository<Bid, Long> {
-    
+
     @Query("SELECT b FROM Bid b WHERE b.auction.id = :auctionId AND b.isDeleted = false ORDER BY b.price DESC LIMIT 1")
     Optional<Bid> findTopBidByAuctionIdOrderByPriceDesc(Long auctionId);
 
-    List<Bid> findByAuctionIdOrderByCreatedAtDesc(Long auctionId);
+    List<Bid> findByAuctionIdOrderByPriceDesc(Long auctionId);
 
     @Query("SELECT MAX(b.price) FROM Bid b WHERE b.auction.id = :auctionId AND b.isDeleted = false")
     Integer findMaxBidPriceByAuctionId(Long auctionId);

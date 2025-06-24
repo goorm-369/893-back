@@ -45,7 +45,7 @@ public class BidService {
             throw new AuctionNotFoundException();
         }
 
-        List<Bid> allBids = getByAuctionIdOrderByCreatedAtDesc(auctionId);
+        List<Bid> allBids = findByAuctionIdOrderByPriceDesc(auctionId);
 
         Map<Boolean, List<Bid>> partitioned = allBids.stream()
                 .collect(Collectors.partitioningBy(Bid::isCancelled));
@@ -121,8 +121,8 @@ public class BidService {
         broadcastBidEvent(auctionId, event);
     }
 
-    private List<Bid> getByAuctionIdOrderByCreatedAtDesc(Long auctionId) {
-        return bidRepository.findByAuctionIdOrderByCreatedAtDesc(auctionId);
+    private List<Bid> findByAuctionIdOrderByPriceDesc(Long auctionId) {
+        return bidRepository.findByAuctionIdOrderByPriceDesc(auctionId);
     }
 
     private BidResponse findRecentUserBid(List<Bid> activeBids, Long userId, LocalDateTime thresholdTime) {
