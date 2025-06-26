@@ -116,6 +116,9 @@ dependencies {
     //prometheus
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
+    //p6spy
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0'
+
     //h2
     runtimeOnly 'com.h2database:h2'
 }

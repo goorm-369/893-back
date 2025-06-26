@@ -29,6 +29,7 @@ public class BidService {
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
     private final SseService sseService;
+    private final BidRedisService bidRedisService;
 
     @Transactional(readOnly = true)
     public BidOverviewResponse getBidOverview(Long auctionId, User user) {
@@ -79,7 +80,7 @@ public class BidService {
         deactivatePreviousWinningBid(auctionId);
 
         bidRepository.save(newBid);
-
+        bidRedisService.incrementBidderCount(auctionId, user.getId());
         BidEventResponse event = createBidEventResponse(auctionId, newBid, false);
         broadcastBidEvent(auctionId, event);
 
@@ -101,7 +102,7 @@ public class BidService {
         bid.cancel();
 
         activateNewWinningBid(auctionId);
-
+        bidRedisService.decrementBidderCount(auctionId, userId);
         BidEventResponse event = createBidEventResponse(auctionId, bid, true);
         broadcastBidEvent(auctionId, event);
     }

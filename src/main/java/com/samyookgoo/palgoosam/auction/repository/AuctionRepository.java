@@ -168,4 +168,13 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     DashboardProjection getDashboardCounts();
 
     List<AuctionStatus> status(AuctionStatus status);
+
+
+    @Query(value = """
+            SELECT a.id as auctionId
+            FROM auction as a 
+            WHERE status IN ('active', 'pending')
+            ORDER BY a.id
+            """, nativeQuery = true)
+    List<Long> getActiveAuctionIds();
 }

@@ -114,5 +114,10 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
             """, nativeQuery = true)
     List<BidForHighestPriceProjection> findHighestBidProjectsByBidderId(@Param("userId") Long userId);
 
-
+    @Query(value = """
+            SELECT COALESCE(COUNT(DISTINCT b.bidder_id) ,0)
+            FROM bid as b
+            WHERE b.auction_id = :auctionId AND b.is_deleted = false
+            """, nativeQuery = true)
+    Long countBidderByAuctionId(@Param("auctionId") Long auctionId);
 }

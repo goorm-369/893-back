@@ -34,6 +34,7 @@ import com.samyookgoo.palgoosam.auth.service.AuthService;
 import com.samyookgoo.palgoosam.bid.domain.Bid;
 import com.samyookgoo.palgoosam.bid.exception.BidNotFoundException;
 import com.samyookgoo.palgoosam.bid.repository.BidRepository;
+import com.samyookgoo.palgoosam.bid.service.BidRedisService;
 import com.samyookgoo.palgoosam.common.s3.S3Service;
 import com.samyookgoo.palgoosam.global.exception.ErrorCode;
 import com.samyookgoo.palgoosam.payment.constant.PaymentStatus;
@@ -73,6 +74,8 @@ public class AuctionService {
     private final PaymentRepository paymentRepository;
     private final AuctionSearchRepository auctionSearchRepository;
     private final S3Service s3Service;
+    private final ScrapRedisService scrapRedisService;
+    private final BidRedisService bidRedisService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -574,9 +577,9 @@ public class AuctionService {
                         .status(AuctionStatus.valueOf(auction.getStatus()))
                         .basePrice(auction.getBasePrice())
                         .thumbnailUrl(auction.getThumbnailUrl())
-                        .bidderCount(auction.getBidderCount())
+                        .bidderCount(bidRedisService.getOrCalculateBidderCount(auction.getId()))
                         .currentPrice(auction.getCurrentPrice())
-                        .scrapCount(auction.getScrapCount())
+                        .scrapCount(scrapRedisService.getOrCalculateScrapCount(auction.getId()))
                         .isScraped(user != null && scrapRepository.existsByUserIdAndAuctionId(user.getId(),
                                 auction.getId()))
                         .build()

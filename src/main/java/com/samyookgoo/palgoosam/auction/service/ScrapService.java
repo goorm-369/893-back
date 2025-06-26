@@ -6,7 +6,6 @@ import com.samyookgoo.palgoosam.auth.service.AuthService;
 import com.samyookgoo.palgoosam.user.domain.Scrap;
 import com.samyookgoo.palgoosam.user.domain.User;
 import com.samyookgoo.palgoosam.user.repository.ScrapRepository;
-import com.samyookgoo.palgoosam.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +18,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ScrapService {
 
-    private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final ScrapRepository scrapRepository;
     private final AuthService authService;
+    private final ScrapRedisService scrapRedisService;
 
     @Transactional
     public void addScrap(Long auctionId) {
@@ -35,6 +34,7 @@ public class ScrapService {
 
         Scrap scrap = Scrap.of(user, auction);
         scrapRepository.save(scrap);
+        scrapRedisService.incrementScrapCount(auctionId);
 
         log.info("사용자 {}가 경매 상품 {}을 스크랩했습니다.", user.getId(), auction.getId());
     }
@@ -49,6 +49,7 @@ public class ScrapService {
                         + "."));
 
         scrapRepository.delete(scrap);
+        scrapRedisService.decrementScrapCount(auctionId);
 
         log.info("사용자 {}가 경매 상품 {}의 스크랩을 취소했습니다.", user.getId(), auction.getId());
     }
